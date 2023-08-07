@@ -1,0 +1,4 @@
+name: PotionsConnect
+version: '${version}'
+main: me.fortibrine.potionsconnect.PotionsConnect
+api-version: 1.13

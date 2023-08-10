@@ -1,5 +1,6 @@
 package me.fortibrine.potionsconnect.utils;
 
+import lombok.Getter;
 import me.fortibrine.potionsconnect.PotionsConnect;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -13,7 +14,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +22,9 @@ public class VariableManager {
 
     private FileConfiguration config;
     private PotionManager potionManager;
-    private Map<ShapedRecipe, UpgradeItem> items = new HashMap<>();
+
+    @Getter
+    private Map<Material, UpgradeItem> items = new HashMap<>();
 
     public VariableManager(PotionsConnect plugin) {
         this.config = plugin.getConfig();
@@ -46,29 +49,32 @@ public class VariableManager {
 
             Bukkit.addRecipe(recipe);
 
-            this.items.put(recipe, upgradeItem);
+            this.items.put(material, upgradeItem);
         }
     }
 
-    public Set<PotionEffect> upgradeItem(Recipe recipe) {
-        ShapedRecipe shapedRecipe = (ShapedRecipe) recipe;
-        ItemStack item = shapedRecipe.getIngredientMap().get('A');
+    public void upgradeItem(ItemStack item, Material material) {
 
-        if (this.items.containsKey(shapedRecipe)) {
+        System.out.println("I WORK");
 
-        } else {
-            return null;
-        }
+        if (item == null) return;
 
-        int duration = this.items.get(shapedRecipe).getDuration();
-        int level = this.items.get(shapedRecipe).getLevel();
+        Material itemType = item.getType();
 
-        Set<PotionEffect> potionEffects = this.potionManager.getEffects(item);
-        Set<PotionEffect> result = new HashSet<>();
+        if (itemType != Material.POTION && itemType != Material.SPLASH_POTION && itemType != Material.LINGERING_POTION) return;
+        PotionMeta meta = (PotionMeta) item.getItemMeta();
 
-        potionEffects.forEach(effect -> result.add(new PotionEffect(effect.getType(), effect.getDuration() + duration, effect.getAmplifier() + level)));
+        if (!this.items.containsKey(material))  return;
+        UpgradeItem upgradeItem = this.items.get(material);
 
-        return result;
-     }
+        Set<PotionEffect> effects = potionManager.getEffects(item);
+        List<PotionEffect> customEffects = meta.getCustomEffects();
+        customEffects.clear();
+
+        effects.forEach(effect -> customEffects.add(new PotionEffect(effect.getType(), effect.getDuration() + upgradeItem.getDuration(), effect.getAmplifier() + upgradeItem.getLevel())));
+
+        item.setItemMeta(meta);
+
+    }
 
 }

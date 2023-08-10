@@ -3,15 +3,20 @@ package me.fortibrine.potionsconnect.listeners;
 import me.fortibrine.potionsconnect.PotionsConnect;
 import me.fortibrine.potionsconnect.utils.PotionManager;
 import me.fortibrine.potionsconnect.utils.VariableManager;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CraftEventListener implements Listener {
 
@@ -36,11 +41,30 @@ public class CraftEventListener implements Listener {
     @EventHandler
     public void levelUpCraft(PrepareItemCraftEvent event) {
         CraftingInventory inventory = event.getInventory();
+        ItemStack[] matrix = inventory.getMatrix();
 
-        if (inventory.getRecipe() == null) return;
+        final Set<Material> materials = variableManager.getItems().keySet();
 
-        Set<PotionEffect> effects = variableManager.upgradeItem(inventory.getRecipe());
+        Stream<ItemStack> items = Arrays.stream(matrix).filter(item -> {
+            if (item == null) return false;
+            Material type = item.getType();
 
+            return materials.contains(type) || type == Material.POTION || type == Material.SPLASH_POTION || type == Material.LINGERING_POTION;
+        });
+
+        if (items.count() != 2) return;
+
+        List<ItemStack> containsUpgradeItem = items.filter(materials::contains).collect(Collectors.toList());
+        List<ItemStack> containsPotion = items.filter(item -> {
+            Material type = item.getType();
+            return type == Material.POTION || type == Material.SPLASH_POTION || type == Material.LINGERING_POTION;
+        }).collect(Collectors.toList());
+
+        if (containsUpgradeItem.size() == 0 || containsPotion.size() == 0) return;
+        ItemStack potion = containsPotion.get(0);
+        ItemStack upgradeItem = containsUpgradeItem.get(0);
+
+        variableManager.upgradeItem(potion, upgradeItem.getType());
 
     }
 

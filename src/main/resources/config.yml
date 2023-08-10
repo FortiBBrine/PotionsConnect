@@ -1,1 +1,5 @@
-duration: 180
+items:
+  a:
+    material: REDSTONE
+    duration: 60
+    level: 0

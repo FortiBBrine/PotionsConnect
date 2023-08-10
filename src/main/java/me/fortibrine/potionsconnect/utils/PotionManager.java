@@ -21,7 +21,10 @@ public class PotionManager {
         if (potionMeta == null) return new HashSet<>();
 
         Set<PotionEffect> potionEffects = new HashSet<>();
-        potionEffects.add(this.getEffects(potionMeta.getBasePotionData()));
+        if (potionMeta.getBasePotionData().getType().getEffectType() != null) {
+            potionEffects.add(this.getEffects(potionMeta.getBasePotionData()));
+        }
+
         potionEffects.addAll(potionMeta.getCustomEffects());
 
         return potionEffects;
@@ -46,6 +49,11 @@ public class PotionManager {
         potionEffects.forEach(potionEffect -> meta.addCustomEffect(potionEffect, true));
 
         item.setItemMeta(meta);
+
+        if (potionEffects.size() == 0) {
+            return null;
+        }
+
         return item;
     }
 
@@ -53,12 +61,21 @@ public class PotionManager {
         Set<PotionEffect> potionEffects = new HashSet<>();
 
         for (PotionEffect potionEffect : potions) {
+            boolean inList = false;
+
             for (PotionEffect potionInList : potionEffects) {
                 if (potionInList.getType() == potionEffect.getType()) {
+                    potionEffects.remove(potionInList);
                     potionEffects.add(new PotionEffect(potionEffect.getType(), potionInList.getDuration() + potionEffect.getDuration(), potionInList.getAmplifier() + potionEffect.getAmplifier()));
+                    inList = true;
                     break;
                 }
             }
+
+            if (!inList) {
+                potionEffects.add(potionEffect);
+            }
+
         }
 
         return potionEffects;
@@ -172,7 +189,7 @@ public class PotionManager {
                 duration = 240;
             }
         }
-        return new PotionEffect(effectType, duration, level);
+        return new PotionEffect(effectType, duration * 20, level - 1);
     }
 
 }

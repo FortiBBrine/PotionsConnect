@@ -8,9 +8,13 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PotionManager {
 
@@ -31,8 +35,8 @@ public class PotionManager {
 
     }
 
-    public Set<PotionEffect> getEffects(ItemStack... items) {
-        Set<PotionEffect> potionEffects = new HashSet<>();
+    public List<PotionEffect> getEffects(ItemStack... items) {
+        List<PotionEffect> potionEffects = new ArrayList<>();
 
         for (ItemStack item : items) {
             potionEffects.addAll(this.getEffects(item));
@@ -58,25 +62,26 @@ public class PotionManager {
     }
 
     public Set<PotionEffect> combinePotions(PotionEffect... potions) {
+        Set<PotionEffect> potionsInSet = Arrays.stream(potions).collect(Collectors.toSet());;
+        List<PotionEffect> potionsInList = Arrays.stream(potions).collect(Collectors.toList());;
+
         Set<PotionEffect> potionEffects = new HashSet<>();
 
-        for (PotionEffect potionEffect : potions) {
-            boolean inList = false;
+        potionsInSet.forEach(potion -> {
+            List<PotionEffect> potionsWthSameType = potionsInList.stream().filter(potionWithTheSameType -> potion.getType() == potionWithTheSameType.getType()).collect(Collectors.toList());
 
-            for (PotionEffect potionInList : potionEffects) {
-                if (potionInList.getType() == potionEffect.getType()) {
-                    potionEffects.remove(potionInList);
-                    potionEffects.add(new PotionEffect(potionEffect.getType(), potionInList.getDuration() + potionEffect.getDuration(), potionInList.getAmplifier() + potionEffect.getAmplifier()));
-                    inList = true;
-                    break;
-                }
+            int duration = 0;
+            int amplifier = 0;
+            for (PotionEffect potionWithSameType : potionsWthSameType) {
+                duration += potionWithSameType.getDuration();
+                amplifier += potionWithSameType.getAmplifier();
             }
 
-            if (!inList) {
-                potionEffects.add(potionEffect);
-            }
+            amplifier += potionsWthSameType.size() - 1;
 
-        }
+            potionEffects.add(new PotionEffect(potion.getType(), duration, amplifier));
+
+        });
 
         return potionEffects;
     }

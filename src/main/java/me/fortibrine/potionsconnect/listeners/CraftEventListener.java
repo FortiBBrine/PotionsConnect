@@ -12,11 +12,9 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CraftEventListener implements Listener {
 
@@ -32,6 +30,16 @@ public class CraftEventListener implements Listener {
     @EventHandler
     public void onCraft(PrepareItemCraftEvent event) {
         CraftingInventory inventory = event.getInventory();
+
+        List<ItemStack> items = Arrays.stream(inventory.getMatrix()).filter(item -> {
+           if (item == null) return false;
+           Material type = item.getType();
+
+           return type != Material.POTION && type != Material.SPLASH_POTION && type != Material.LINGERING_POTION && type != Material.AIR;
+        }).collect(Collectors.toList());
+
+        if (items.size() != 0) return;
+
         ItemStack item = potionManager.potionFromEffects(potionManager.combinePotions(potionManager.getEffects(inventory.getMatrix())));
 
         if (item == null) return;
@@ -45,26 +53,29 @@ public class CraftEventListener implements Listener {
 
         final Set<Material> materials = variableManager.getItems().keySet();
 
-        Stream<ItemStack> items = Arrays.stream(matrix).filter(item -> {
+        List<ItemStack> items = Arrays.stream(matrix).filter(item -> {
             if (item == null) return false;
             Material type = item.getType();
 
             return materials.contains(type) || type == Material.POTION || type == Material.SPLASH_POTION || type == Material.LINGERING_POTION;
-        });
+        }).collect(Collectors.toList());
 
-        if (items.count() != 2) return;
+        if (items.size() != 2) return;
 
-        List<ItemStack> containsUpgradeItem = items.filter(materials::contains).collect(Collectors.toList());
-        List<ItemStack> containsPotion = items.filter(item -> {
+        List<ItemStack> containsUpgradeItem = items.stream().filter(item -> materials.contains(item.getType())).collect(Collectors.toList());
+        List<ItemStack> containsPotion = items.stream().filter(item -> {
             Material type = item.getType();
             return type == Material.POTION || type == Material.SPLASH_POTION || type == Material.LINGERING_POTION;
         }).collect(Collectors.toList());
 
         if (containsUpgradeItem.size() == 0 || containsPotion.size() == 0) return;
+
         ItemStack potion = containsPotion.get(0);
         ItemStack upgradeItem = containsUpgradeItem.get(0);
 
-        variableManager.upgradeItem(potion, upgradeItem.getType());
+        ItemStack result = variableManager.upgradeItem(potion, upgradeItem.getType());
+
+        inventory.setResult(result);
 
     }
 

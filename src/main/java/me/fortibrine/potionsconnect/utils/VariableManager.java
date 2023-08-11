@@ -2,21 +2,15 @@ package me.fortibrine.potionsconnect.utils;
 
 import lombok.Getter;
 import me.fortibrine.potionsconnect.PotionsConnect;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class VariableManager {
 
@@ -38,43 +32,29 @@ public class VariableManager {
             int level = configurationSection.getInt("level");
 
             UpgradeItem upgradeItem = new UpgradeItem(duration, level, material);
-
-            NamespacedKey namespacedKey = new NamespacedKey(plugin, key);
-            ShapedRecipe recipe = new ShapedRecipe(namespacedKey, new ItemStack(Material.POTION));
-
-            recipe.shape("AB ", "   ", "   ");
-
-            recipe.setIngredient('A', Material.POTION);
-            recipe.setIngredient('B', material);
-
-            Bukkit.addRecipe(recipe);
-
             this.items.put(material, upgradeItem);
         }
     }
 
-    public void upgradeItem(ItemStack item, Material material) {
+    public ItemStack upgradeItem(ItemStack item, Material material) {
 
-        System.out.println("I WORK");
-
-        if (item == null) return;
+        if (item == null) return null;
 
         Material itemType = item.getType();
 
-        if (itemType != Material.POTION && itemType != Material.SPLASH_POTION && itemType != Material.LINGERING_POTION) return;
-        PotionMeta meta = (PotionMeta) item.getItemMeta();
+        if (itemType != Material.POTION && itemType != Material.SPLASH_POTION && itemType != Material.LINGERING_POTION) return null;
 
-        if (!this.items.containsKey(material))  return;
+        if (!this.items.containsKey(material)) return null;
         UpgradeItem upgradeItem = this.items.get(material);
 
-        Set<PotionEffect> effects = potionManager.getEffects(item);
-        List<PotionEffect> customEffects = meta.getCustomEffects();
-        customEffects.clear();
+        ItemStack result = new ItemStack(item.getType());
+        PotionMeta resultMeta = (PotionMeta) result.getItemMeta();
 
-        effects.forEach(effect -> customEffects.add(new PotionEffect(effect.getType(), effect.getDuration() + upgradeItem.getDuration(), effect.getAmplifier() + upgradeItem.getLevel())));
+        potionManager.getEffects(item).forEach(effect -> resultMeta.addCustomEffect(new PotionEffect(effect.getType(), effect.getDuration() + upgradeItem.getDuration() * 20, effect.getAmplifier() + upgradeItem.getLevel()), true));
 
-        item.setItemMeta(meta);
+        result.setItemMeta(resultMeta);
 
+        return result;
     }
 
 }

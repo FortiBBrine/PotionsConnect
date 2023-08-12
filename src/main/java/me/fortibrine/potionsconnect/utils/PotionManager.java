@@ -46,8 +46,8 @@ public class PotionManager {
 
     }
 
-    public ItemStack potionFromEffects(Collection<? extends PotionEffect> potionEffects) {
-        ItemStack item = new ItemStack(Material.POTION);
+    public ItemStack potionFromEffects(Collection<? extends PotionEffect> potionEffects, Material type) {
+        ItemStack item = new ItemStack(type);
         PotionMeta meta = (PotionMeta) item.getItemMeta();
 
         potionEffects.forEach(potionEffect -> meta.addCustomEffect(potionEffect, true));
@@ -68,7 +68,9 @@ public class PotionManager {
         Set<PotionEffect> potionEffects = new HashSet<>();
 
         potionsInSet.forEach(potion -> {
-            List<PotionEffect> potionsWthSameType = potionsInList.stream().filter(potionWithTheSameType -> potion.getType() == potionWithTheSameType.getType()).collect(Collectors.toList());
+            List<PotionEffect> potionsWthSameType = potionsInList.stream().filter(potionWithTheSameType -> potion.getType().equals(potionWithTheSameType.getType())).collect(Collectors.toList());
+
+            potionsWthSameType.forEach(System.out::println);
 
             int duration = 0;
             int amplifier = 0;

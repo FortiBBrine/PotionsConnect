@@ -35,12 +35,14 @@ public class CraftEventListener implements Listener {
            if (item == null) return false;
            Material type = item.getType();
 
-           return type != Material.POTION && type != Material.SPLASH_POTION && type != Material.LINGERING_POTION && type != Material.AIR;
+           return type != Material.POTION && type != Material.SPLASH_POTION;
         }).collect(Collectors.toList());
 
         if (items.size() != 0) return;
 
-        ItemStack item = potionManager.potionFromEffects(potionManager.combinePotions(potionManager.getEffects(inventory.getMatrix())));
+        Material type = Material.POTION;
+
+        ItemStack item = potionManager.potionFromEffects(potionManager.combinePotions(potionManager.getEffects(inventory.getMatrix())), type);
 
         if (item == null) return;
         inventory.setResult(item);
@@ -57,7 +59,7 @@ public class CraftEventListener implements Listener {
             if (item == null) return false;
             Material type = item.getType();
 
-            return materials.contains(type) || type == Material.POTION || type == Material.SPLASH_POTION || type == Material.LINGERING_POTION;
+            return materials.contains(type) || type == Material.POTION || type == Material.SPLASH_POTION;
         }).collect(Collectors.toList());
 
         if (items.size() != 2) return;

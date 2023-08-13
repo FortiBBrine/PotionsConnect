@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
@@ -40,7 +41,19 @@ public class CraftEventListener implements Listener {
 
         if (items.size() != 0) return;
 
-        Material type = Material.POTION;
+        List<ItemStack> potionItems = Arrays.stream(inventory.getMatrix()).filter(item -> {
+            if (item == null) return false;
+            Material type = item.getType();
+
+            return type == Material.POTION || type == Material.SPLASH_POTION;
+        }).collect(Collectors.toList());
+
+        if (potionItems.isEmpty()) return;
+
+        Material type = potionItems.get(0).getType();
+        for (ItemStack potionItem : potionItems) {
+            if (type != potionItem.getType()) return;
+        }
 
         ItemStack item = potionManager.potionFromEffects(potionManager.combinePotions(potionManager.getEffects(inventory.getMatrix())), type);
 
@@ -51,6 +64,7 @@ public class CraftEventListener implements Listener {
     @EventHandler
     public void levelUpCraft(PrepareItemCraftEvent event) {
         CraftingInventory inventory = event.getInventory();
+
         ItemStack[] matrix = inventory.getMatrix();
 
         final Set<Material> materials = variableManager.getItems().keySet();

@@ -2,15 +2,19 @@ package me.fortibrine.potionsconnect.utils;
 
 import lombok.Getter;
 import me.fortibrine.potionsconnect.PotionsConnect;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class VariableManager {
 
@@ -31,7 +35,21 @@ public class VariableManager {
             int duration = configurationSection.getInt("duration");
             int level = configurationSection.getInt("level");
 
-            UpgradeItem upgradeItem = new UpgradeItem(duration, level, material);
+            ShapedRecipe potionRecipe = new ShapedRecipe(new NamespacedKey(plugin, UUID.randomUUID().toString()), new ItemStack(Material.POTION));
+            ShapedRecipe splashPotionRecipe = new ShapedRecipe(new NamespacedKey(plugin, UUID.randomUUID().toString()), new ItemStack(Material.SPLASH_POTION));
+
+            potionRecipe.shape("AB ", "   ", "   ");
+            splashPotionRecipe.shape("AB ", "   ", "   ");
+
+            potionRecipe.setIngredient('A', Material.POTION);
+            splashPotionRecipe.setIngredient('A', Material.SPLASH_POTION);
+            potionRecipe.setIngredient('B', material);
+            splashPotionRecipe.setIngredient('B', material);
+
+            Bukkit.addRecipe(potionRecipe);
+            Bukkit.addRecipe(splashPotionRecipe);
+
+            UpgradeItem upgradeItem = new UpgradeItem(duration, level, material, potionRecipe, splashPotionRecipe);
             this.items.put(material, upgradeItem);
         }
     }

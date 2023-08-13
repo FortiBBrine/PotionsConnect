@@ -20,7 +20,7 @@ public class PotionManager {
 
     public Set<PotionEffect> getEffects(ItemStack item) {
         if (item == null) return new HashSet<>();
-        if (item.getType() != Material.POTION) return new HashSet<>();
+        if (item.getType() != Material.POTION && item.getType() != Material.SPLASH_POTION) return new HashSet<>();
         PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
         if (potionMeta == null) return new HashSet<>();
 
@@ -69,8 +69,6 @@ public class PotionManager {
 
         potionsInSet.forEach(potion -> {
             List<PotionEffect> potionsWthSameType = potionsInList.stream().filter(potionWithTheSameType -> potion.getType().equals(potionWithTheSameType.getType())).collect(Collectors.toList());
-
-            potionsWthSameType.forEach(System.out::println);
 
             int duration = 0;
             int amplifier = 0;
